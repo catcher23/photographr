@@ -7,8 +7,7 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 var router = express.Router();
-var jwt    = require('jsonwebtoken'); 
-
+var jwt    = require('jsonwebtoken');
 //routes
 var users   = require('./routes/users'); 
 var posts = require('./routes/posts');
@@ -33,8 +32,10 @@ app.use(function(req, res, next) {
 
 var staticPath = 'public';
 
+
+
 app.use(logger('dev'));
-app.use(bodyParser.json());
+app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser({limit: '50mb'}));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());

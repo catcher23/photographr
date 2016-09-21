@@ -77,18 +77,21 @@ const validateAndCreatePost = (values, dispatch) => {
 };
 
 
-
 const mapDispatchToProps = (dispatch) => {
   return {
     createPost: validateAndCreatePost,
     resetMe: () => {
       dispatch(resetNewPost());
     },
-    uploadImage: (imageData) => {
-      dispatch(uploadImage(imageData));
+    uploadImage:(file, dispatch) => {
+      let token = sessionStorage.getItem('jwtToken');
+      if (!token || token === '') { //if there is no token, dont bother,
+        return;
+      }
+      dispatch(uploadImage(file, token));
     }
-  }
-};
+    }
+  };
 
 
 function mapStateToProps(state, ownProps) {

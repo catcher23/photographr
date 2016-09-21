@@ -1,55 +1,33 @@
 var express = require('express');
 var router = express.Router();
+var fs = require('fs');
 var knox = require('knox');
 var uuid = require('node-uuid');
 var async = require('async');
+var s3fs = require('s3fs');
 
-router.post('/images', function(req, res, next) {
-	var data = req.body || {};
-	data.filename = uuid.v4();
-	data['created_at'] = new Date();
-
-	// async waterfall (see: https://github.com/caolan/async)
-	async.waterfall([
-
-		// upload file to amazon s3
-		function(cb) {
-
-			// initialize knox client
-			var knoxClient = knox.createClient({
-				key: process.env.S3_KEY,
-				secret: process.env.S3_SECRET,
-				bucket: process.env.S3_BUCKET
-			});
-
-			// send put via knox
-			knoxClient.putFile('', 'uploads/' + data.filename, {
-				'Content-Type': data.type,
-				'x-amz-acl': 'public-read'
-			}, function(err, result) {
-
-				if (err || result.statusCode != 200) {
-					cb(err);
-				}
-
-				cb(null);
-
-			});
-
-		}
-		// final cb function
-	], function(err, result) {
-
-		// catch all errors
-		if (err) {
-			// use global logger to log to console
-			console.log(err);
-		}
-
-		// respond to client with result from database
-		res.send(201, result);
-		return next();
-	});
+var s3fsImpl = new s3fs('catcher1111111', {
+	accessKeyId: process.env.S3_KEY,
+	secretAccessKey: process.env.S3_SECRET
 });
+s3fsImpl.create();
+
+var multiparty = require('connect-multiparty'),
+		multipartyMiddleware = multiparty();
+
+router.use(multipartyMiddleware);
+
+router.get('/images', function(req, res) {
+	var file = req.files.file;
+	var stream = fs.createReadStream(file.path);
+	return s3fsImpl.writeFile(file.originalFilename, stream)
+			.then(function() {
+				fs.unlink(file.path);
+						return res.status(201).json({message: 'Could not delete post'})}, function(err) {
+					if(err)
+					console.log(err);
+					return res.status(500).json({message: 'Could not delete post'});
+				});
+			});
 
 module.exports = router;

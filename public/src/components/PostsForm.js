@@ -44,7 +44,6 @@ class PostsForm extends Component {
 
     const file = findDOMNode(this.refs.file).files[0];
     if(!file) return;
-
     this.props.uploadImage(file);
   }
 

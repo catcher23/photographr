@@ -7,11 +7,12 @@ export const RESET_UPLOAD_IMAGE = 'RESET_UPLOAD_IMAGE';
 
 const ROOT_URL = location.href.indexOf('localhost') > 0 ? 'http://localhost:3000/api' : '/api';
 
-export function uploadImage(imageData) {
+export function uploadImage(file, tokenFromStorage) {
 	const request = axios({
 		method: 'post',
-		data: imageData,
-		url: `${ROOT_URL}/images`
+		data: file,
+		url: `${ROOT_URL}/images`,
+		headers: {'Authorization': `Bearer ${tokenFromStorage}`}
 	});
 
 	return {
